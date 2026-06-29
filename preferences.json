@@ -1,0 +1,7 @@
+{
+    "id": "plocate-fuzzy",
+    "name": "Plocate Fuzzy Search",
+    "description": "Search files using plocate with fuzzy ranking",
+    "command": "python3 main.py {query}",
+    "keyword": "f"
+}

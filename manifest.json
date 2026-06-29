@@ -1,0 +1,16 @@
+{
+    "required_api_version": "2",
+    "name": "Plocate Fuzzy Search",
+    "description": "Spotlight-like search using plocate",
+    "developer_name": "custom",
+    "icon": "icon.png",
+    "preferences": [
+        {
+            "id": "kw",
+            "type": "keyword",
+            "name": "File Search Keyword",
+            "description": "Keyword to trigger file search",
+            "default_value": "f"
+        }
+    ]
+}
