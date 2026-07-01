@@ -23,7 +23,7 @@ class ItemEnterEventListener(EventListener):
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
         query = event.get_argument() or ""
-        is_dir_search = event.get_keyword_id() == "kw_dir"
+        is_dir_search = event.get_keyword() == extension.preferences.get("kw_dir", "fd")
 
         update_item = ExtensionResultItem(
             icon="icon.png",
