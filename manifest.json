@@ -9,8 +9,15 @@
             "id": "kw",
             "type": "keyword",
             "name": "File Search Keyword",
-            "description": "Keyword to trigger file search",
+            "description": "Keyword to search files",
             "default_value": "f"
+        },
+        {
+            "id": "kw_dir",
+            "type": "keyword",
+            "name": "Directory Search Keyword",
+            "description": "Keyword to search directories only",
+            "default_value": "fd"
         }
     ]
 }

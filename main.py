@@ -6,6 +6,7 @@ from ulauncher.api.shared.action.RenderResultListAction import RenderResultListA
 from ulauncher.api.shared.action.OpenAction import OpenAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 import subprocess
+import os
 
 class FileSearchExtension(Extension):
     def __init__(self):
@@ -22,6 +23,7 @@ class ItemEnterEventListener(EventListener):
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
         query = event.get_argument() or ""
+        is_dir_search = event.get_keyword_id() == "kw_dir"
 
         update_item = ExtensionResultItem(
             icon="icon.png",
@@ -38,19 +40,25 @@ class KeywordQueryEventListener(EventListener):
             capture_output=True,
             text=True
         )
-        lines = proc.stdout.strip().split("\n")[:10]
+        all_lines = proc.stdout.strip().split("\n")
+
+        if is_dir_search:
+            filtered = [l for l in all_lines if l.strip() and os.path.isdir(l.strip())]
+        else:
+            filtered = [l for l in all_lines if l.strip()]
+
+        lines = filtered[:10]
         results = []
 
         for path in lines:
-            if path.strip():
-                results.append(
-                    ExtensionResultItem(
-                        icon="icon.png",
-                        name=path,
-                        description="Open file location",
-                        on_enter=OpenAction(path)
-                    )
+            results.append(
+                ExtensionResultItem(
+                    icon="icon.png",
+                    name=os.path.basename(path),
+                    description=path,
+                    on_enter=OpenAction(path)
                 )
+            )
 
         if not results:
             results.append(update_item)
