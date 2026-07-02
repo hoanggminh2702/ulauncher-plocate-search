@@ -3,14 +3,16 @@ from ulauncher.api.client.EventListener import EventListener
 from ulauncher.api.shared.event import KeywordQueryEvent, ItemEnterEvent
 from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
-from ulauncher.api.shared.action.OpenAction import OpenAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 import subprocess
 import os
 
+HOME = os.path.expanduser("~")
+
 class FileSearchExtension(Extension):
     def __init__(self):
         super().__init__()
+        self.recent_paths = []
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
 
@@ -19,6 +21,14 @@ class ItemEnterEventListener(EventListener):
         data = event.get_data()
         if data.get("action") == "updatedb":
             subprocess.Popen(["updatedb"])
+        elif data.get("action") == "open":
+            path = data.get("path", "")
+            if path:
+                if path in extension.recent_paths:
+                    extension.recent_paths.remove(path)
+                extension.recent_paths.insert(0, path)
+                extension.recent_paths = extension.recent_paths[:100]
+                subprocess.Popen(["xdg-open", path])
 
 class KeywordQueryEventListener(EventListener):
     def on_event(self, event, extension):
@@ -35,8 +45,9 @@ class KeywordQueryEventListener(EventListener):
         if not query:
             return RenderResultListAction([update_item])
 
+        limit = "200" if is_dir_search else "50"
         proc = subprocess.run(
-            ["plocate", "-i", "--limit", "50", query],
+            ["plocate", "-i", "--limit", limit, query],
             capture_output=True,
             text=True
         )
@@ -47,7 +58,17 @@ class KeywordQueryEventListener(EventListener):
         else:
             filtered = [l for l in all_lines if l.strip()]
 
-        lines = filtered[:10]
+        recent = extension.recent_paths
+
+        def sort_key(path):
+            if path in recent:
+                return (0, recent.index(path))
+            if path.startswith(HOME):
+                return (1, 0)
+            return (2, 0)
+
+        filtered.sort(key=sort_key)
+        lines = filtered[:50]
         results = []
 
         for path in lines:
@@ -56,7 +77,7 @@ class KeywordQueryEventListener(EventListener):
                     icon="icon.png",
                     name=os.path.basename(path),
                     description=path,
-                    on_enter=OpenAction(path)
+                    on_enter=ExtensionCustomAction({"action": "open", "path": path}, keep_app_open=False)
                 )
             )
 
