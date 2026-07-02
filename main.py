@@ -45,7 +45,7 @@ class KeywordQueryEventListener(EventListener):
         if not query:
             return RenderResultListAction([update_item])
 
-        limit = "200" if is_dir_search else "50"
+        limit = "100" if is_dir_search else "20"
         proc = subprocess.run(
             ["plocate", "-i", "--limit", limit, query],
             capture_output=True,
@@ -68,7 +68,7 @@ class KeywordQueryEventListener(EventListener):
             return (2, 0)
 
         filtered.sort(key=sort_key)
-        lines = filtered[:50]
+        lines = filtered[:10]
         results = []
 
         for path in lines:
