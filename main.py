@@ -36,7 +36,7 @@ class KeywordQueryEventListener(EventListener):
             return RenderResultListAction([update_item])
 
         proc = subprocess.run(
-            ["plocate", "-i", query],
+            ["plocate", "-i", "--limit", "50", query],
             capture_output=True,
             text=True
         )
